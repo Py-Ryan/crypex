@@ -7,7 +7,7 @@ class TemplateObjects:
     """Class containing template objects for quick use by the client."""
 
     def __init__(self) -> None:
-        self.colors = discord.Color.__dict__.keys()
+        self.colors = [key for key in discord.Color.__dict__.keys() if not str(key).startswith('__')]
 
     @classmethod
     def get_color(cls, color_name: Optional[str]) -> Optional[discord.Colour]:
