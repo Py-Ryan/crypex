@@ -28,23 +28,26 @@ class TemplateObjects:
             Red=discord.Color.red(),
             Teal=discord.Color.teal())
 
-    def get_color(self, color_name: str) -> Optional[discord.Colour]:
+    def get_color(self, color_name: Optional[str]) -> Optional[discord.Colour]:
         """Get a color, if it exists.
 
-            Parameters:
+            Parameters
+            ----------
                 color_name: (str)
                     The name of the color to try and return.
 
-            Return Type:
+            Return Type
+            -----------
                 typing.Optional[discord.Colour]
         """
         _list = dict(self.color_list)
-        return _list[color_name] or None
+        return _list[color_name] or discord.Color.blue()
 
-    def base_embed(self, text: str, random_color: bool = True, _color: str = 'Blurple') -> discord.Embed:
+    def base_embed(self, text: str = '_ _', random_color: bool = True, _color: str = 'Blurple') -> discord.Embed:
         """Construct a basic embed with a description only.
 
-            Parameters:
+            Parameters
+            ----------
                 text: (str)
                     The text for the embed description.
                 random_color: (bool)
@@ -52,7 +55,8 @@ class TemplateObjects:
                 _color: (str)
                     If random_color is false, pick a color.
 
-            Return Type:
+            Return Type
+            -----------
                 discord.Embed
         """
         if random_color:
