@@ -7,28 +7,10 @@ class TemplateObjects:
     """Class containing template objects for quick use by the client."""
 
     def __init__(self) -> None:
-        self.color_list: dict = dict(
-            Blurple=discord.Colour.blurple(),
-            Purple=discord.Color.purple(),
-            Blue=discord.Color.blue(),
-            DarkBlue=discord.Color.dark_blue(),
-            DarkGold=discord.Color.dark_gold(),
-            DarkGreen=discord.Color.dark_green(),
-            DarkGrey=discord.Color.dark_grey(),
-            DarkMagenta=discord.Color.dark_magenta(),
-            DarkPurple=discord.Color.dark_purple(),
-            DarkOrange=discord.Color.dark_orange(),
-            DarkTeal=discord.Color.dark_teal(),
-            DarkerGray=discord.Color.darker_grey(),
-            Gold=discord.Color.gold(),
-            Green=discord.Color.green(),
-            Greyple=discord.Color.greyple(),
-            LightGrey=discord.Color.light_grey(),
-            LighterGrey=discord.Color.lighter_grey(),
-            Red=discord.Color.red(),
-            Teal=discord.Color.teal())
+        self.colors = discord.Color.__dict__.keys()
 
-    def get_color(self, color_name: Optional[str]) -> Optional[discord.Colour]:
+    @classmethod
+    def get_color(cls, color_name: Optional[str]) -> Optional[discord.Colour]:
         """Get a color, if it exists.
 
             Parameters
@@ -40,10 +22,9 @@ class TemplateObjects:
             -----------
                 typing.Optional[discord.Colour]
         """
-        _list = dict(self.color_list)
-        return _list[color_name] or discord.Color.blue()
+        return getattr(discord.Color, color_name, discord.Color.blurple)()
 
-    def base_embed(self, text: str = '_ _', random_color: bool = True, _color: str = 'Blurple') -> discord.Embed:
+    def base_embed(self, text: str = '_ _') -> discord.Embed:
         """Construct a basic embed with a description only.
 
             Parameters
@@ -59,9 +40,10 @@ class TemplateObjects:
             -----------
                 discord.Embed
         """
-        if random_color:
-            color = self.get_color(random.choice(list(self.color_list)))
-        else:
-            color = self.get_color(_color) or discord.Color.blurple()
+        try:
+            color = self.get_color(random.choice(list(self.colors)))
+        except Exception:
+            color = discord.Color.blurple()
+            pass
 
         return discord.Embed(description=text, colour=color)
