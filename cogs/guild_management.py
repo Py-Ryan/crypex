@@ -70,7 +70,7 @@ class GuildManagement(commands.Cog):
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(manage_channels=True)
     async def delete_channel(self, ctx: commands.Context, channel: Union[discord.TextChannel, discord.VoiceChannel],
-                             reason: Optional[str] = None) -> None:
+                             *reason) -> None:
         """Delete a channel.
 
             Parameters
@@ -80,8 +80,10 @@ class GuildManagement(commands.Cog):
             reason: (Optional[str])
                 The reason for deleting the channel.
         """
+        if not reason:
+            reason = ['None']
         try:
-            await channel.delete(reason=reason)
+            await channel.delete(reason=' '.join(reason))
             await ctx.send(embed=self.client.templates.base_embed(f'Goodbye, {str(channel)}!'))
         except Exception:
             raise Exception(f'There is no channel named {str(channel)}')
