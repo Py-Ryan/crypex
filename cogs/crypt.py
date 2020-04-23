@@ -8,6 +8,5 @@ class Crypt(commands.Cog):
         self.client = client
 
 
-
 def setup(client: commands.Bot) -> None:
     client.add_cog(Crypt(client))
