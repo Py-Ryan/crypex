@@ -4,6 +4,10 @@ from .localdata import localdata
 from typing import List
 from crypex.cogs.utils.template_objects import TemplateObjects
 
+cogs: list = list(
+    'crypex.cogs.crypt'
+)
+
 
 class Crypex(commands.Bot):
     """Represents an instance of Crypex."""
@@ -12,6 +16,13 @@ class Crypex(commands.Bot):
         self.ld_handle = localdata.LocalData()
         self.templates = TemplateObjects()
         super().__init__(command_prefix=self.ld_handle.get('default_prefix')[0])
+
+        for i in range(len(cogs)):
+            try:
+                self.load_extension(cogs[i])
+                print(f'Mounted {cogs[i]}')
+            except Exception as e:
+                raise Exception(e)
 
     def run(self) -> None:
         """Run the bot instance."""
