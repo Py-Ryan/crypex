@@ -1,0 +1,12 @@
+{
+    "credentials": {
+        "token": "NzAwNTQ1MDA4MTI5OTMzMzcz.XpzU1w.3YxXNwrovsS_h-fyE8RRnnXJ1EI"
+    },
+    "guilds": {
+        "700544831830622218": ";"
+    },
+    "misc": {
+        "default_prefix": ";",
+        "description": "Simple discord cryptographic bot."
+    }
+}
