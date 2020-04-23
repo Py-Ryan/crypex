@@ -1,12 +1,18 @@
+import os
 import discord
 from discord.ext import commands
 from .localdata import localdata
 from typing import List
 from crypex.cogs.utils.template_objects import TemplateObjects
 
-cogs: list = list(
-    'crypex.cogs.crypt'
-)
+cogs: List[str] = list()
+
+
+def _automatically_append_cogs() -> None:
+    for file in os.listdir('crypex/cogs'):
+        if file.endswith('.py'):
+            file_name = file.split('.')
+            cogs.append(f'crypex.cogs.{file_name[0]}')
 
 
 class Crypex(commands.Bot):
@@ -17,12 +23,13 @@ class Crypex(commands.Bot):
         self.templates = TemplateObjects()
         super().__init__(command_prefix=self.ld_handle.get('default_prefix')[0])
 
-        for i in range(len(cogs)):
+        _automatically_append_cogs()
+        for cog in cogs:
             try:
-                self.load_extension(cogs[i])
-                print(f'Mounted {cogs[i]}')
-            except Exception as e:
-                raise Exception(e)
+                self.load_extension(cog)
+                print(f'Mounted Extension: {cog[12:]}')
+            except Exception as msg:
+                raise Exception(msg)
 
     def run(self) -> None:
         """Run the bot instance."""
