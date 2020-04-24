@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from typing import Optional, Union, Deque
+from typing import Optional, Union
 
 
 class GuildManagement(commands.Cog):
