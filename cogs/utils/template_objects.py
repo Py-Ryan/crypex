@@ -9,8 +9,8 @@ class TemplateObjects:
     def __init__(self) -> None:
         self.colors = [key for key in discord.Color.__dict__.keys() if not str(key).startswith('__')]
 
-    @classmethod
-    def get_color(cls, color_name: Optional[str]) -> Optional[discord.Colour]:
+    @staticmethod
+    def get_color(color_name: Optional[str]) -> Optional[discord.Colour]:
         """Get a color, if it exists.
 
             Parameters
@@ -20,7 +20,7 @@ class TemplateObjects:
 
             Return Type
             -----------
-                typing.Optional[discord.Colour]
+                Optional[discord.Colour]
         """
         return getattr(discord.Color, color_name, discord.Color.blurple)()
 
@@ -31,19 +31,11 @@ class TemplateObjects:
             ----------
                 text: (str)
                     The text for the embed description.
-                random_color: (bool)
-                    Whether to assign a random color
-                _color: (str)
-                    If random_color is false, pick a color.
 
             Return Type
             -----------
                 discord.Embed
         """
-        try:
-            color = self.get_color(random.choice(list(self.colors)))
-        except Exception:
-            color = discord.Color.blurple()
-            pass
+        color = self.get_color(random.choice(list(self.colors)))
 
         return discord.Embed(description=text, colour=color)
