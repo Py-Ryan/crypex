@@ -1,0 +1,17 @@
+Project:
+    - Added stub files mainly because:
+        - I prefer static typing.
+        - Often, type hints in cogs extended 120 columns, now we have type hints still, and shorter cogs.
+        - Visual purposes, similar to conventional python type hinting has no effect on the client.
+    - Type hints are only used in non-stub files to declare discord.py implicit conversions.
+    - All files have had non-stub type hints removed (minus conversions)
+
+template_objects:
+    - Redesigned color list to ONLY append discord.Color or discord.Colour values.
+
+sovereign:
+    - New extension for me only.
+
+client:
+    - Removed 'close()' overwrite. Absolutely useless.
+    - Added client.send() to omit calls to the template objects
