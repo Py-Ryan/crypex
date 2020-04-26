@@ -5,19 +5,21 @@ from typing import Optional, List, Dict
 
 class LocalData:
 
-    def __init__(self, local_data: str = 'crypex/localdata/localdata.json') -> None:
+    def __init__(self, local_data='crypex/localdata/localdata.json'):
         self.local_data: str = local_data
-        self.logger = logging.getLogger(__name__)
+        self.logger: logging.Logger = logging.getLogger(__name__)
         self.logger.info('Loaded LocalData object.')
 
-    def get(self, key: str) -> List[str]:
+    def get(self, key):
         """Deep search local data for a key's value.
 
-            Parameters:
+            Parameters
+            ----------
                 key: (str)
                     The key to search for.
 
-            Return Type:
+            Return Type
+            -----------
                 List[str]
         """
         res: List[str] = []
@@ -33,10 +35,11 @@ class LocalData:
 
         return res
 
-    def add(self, _d: dict, add_to: Optional[str] = None) -> None:
+    def add(self, _d, add_to=None):
         """Add a new JSON object to local data.
 
-            Parameters:
+            Parameters
+            ----------
                 add_to: (Optional[str])
                     The name of the key to add _d too. Must be a first-level key.
                 _d: (dict)
@@ -59,10 +62,11 @@ class LocalData:
             except Exception as other_excep:
                 raise Exception(other_excep)
 
-    def edit(self, key: str, new_value: str, delete: bool = False) -> None:
+    def edit(self, key, new_value, delete=False):
         """Edit a key from the local data.
 
-            Parameters:
+            Parameters
+            ----------
                 key: (str)
                     The key to edit, or delete.
                 new_value: (str)

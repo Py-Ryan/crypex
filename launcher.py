@@ -4,7 +4,7 @@ from crypex import client
 
 
 @contextlib.contextmanager
-def setup_logging() -> None:
+def setup_logging():
     try:
         logging.getLogger().setLevel(logging.INFO)
 
@@ -23,7 +23,7 @@ def setup_logging() -> None:
             log.removeHandler(handle)
 
 
-def initalize_client() -> None:
+def initalize_client():
     log = logging.getLogger()
     bot = client.Crypex()
 

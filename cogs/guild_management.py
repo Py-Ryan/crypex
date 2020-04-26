@@ -6,14 +6,14 @@ from typing import Optional, Union
 class GuildManagement(commands.Cog):
     """Guild management commands."""
 
-    def __init__(self, client: commands.Bot) -> None:
+    def __init__(self, client):
         self.client = client
 
     @commands.command()
     @commands.guild_only()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(manage_channels=True)
-    async def create_channel(self, ctx: commands.Context):
+    async def create_channel(self, ctx):
         """Create a channel.
 
             Parameters
@@ -31,14 +31,14 @@ class GuildManagement(commands.Cog):
         def _check_(message) -> bool:
             return message.author == ctx.author
 
-        await ctx.send(embed=self.client.templates.base_embed('What should the channel\'s name be?'))
+        await self.client.send(ctx.channel, text='What should the channel\'s name be?')
         channel_name: str = await self.client.wait_for('message', check=_check_)
 
-        await ctx.send(embed=self.client.templates.base_embed('Should the channel be a VC or Text? Pick one.'))
+        await self.client.send(ctx.channel, text='Should the channel be a VC or Text? Pick one.')
         channel_type: str = await self.client.wait_for('message', check=_check_)
 
-        await ctx.send(embed=self.client.templates.base_embed(
-            'If you\'d like the channel to be added to a category, enter that categories exact name. Else say no.'))
+        await self.client.send(ctx.channel, text='If you\'d like the channel to be added to a category.'
+                                                 'Enter that categories exact name. If not, say no.')
         category_name: str = await self.client.wait_for('message', check=_check_)
 
         try:
@@ -48,7 +48,7 @@ class GuildManagement(commands.Cog):
             category_name = None
             pass
 
-        await ctx.send(embed=self.client.templates.base_embed('Enter a channel topic.'))
+        await self.client.send(ctx.channel, text='Enter a channel topic.')
         topic: str = await self.client.wait_for('message', check=_check_)
 
         if channel_name and channel_type.content.lower() in {'vc', 'voice', 'voicechannel', 'voice_channel'}:
@@ -63,9 +63,9 @@ class GuildManagement(commands.Cog):
     @commands.guild_only()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(manage_channels=True)
-    async def delete_channel(self, ctx: commands.Context, channel: Union[discord.TextChannel, discord.VoiceChannel],
-                             *, reason: str = 'None Provided.') -> None:
-        """Delete a channel.
+    async def delete_channel(self, ctx, channel: Union[discord.TextChannel, discord.VoiceChannel], *,
+                             reason='None Provided.'):
+        """Delete a channel from your guild.
 
             Parameters
             ----------
@@ -76,7 +76,7 @@ class GuildManagement(commands.Cog):
         """
         try:
             await channel.delete(reason=reason)
-            await ctx.send(embed=self.client.templates.base_embed(f'Goodbye, {str(channel)}!'))
+            await self.client.send(ctx.channel, text=f'Goodbye, {channel.name}!')
         except Exception:
             raise Exception(f'There is no channel named {str(channel)}')
 
@@ -84,20 +84,16 @@ class GuildManagement(commands.Cog):
     @commands.guild_only()
     @commands.bot_has_permissions(ban_members=True)
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, puser: Union[discord.Member, discord.User, int], *, reason: str = 'None Provided') -> None:
-        """Ban a guild member.
+    async def ban(self, ctx, user: Union[discord.Member, discord.User, int], *, reason='None Provided'):
+        """Ban a user on discord from your guild.
 
-            user: (Union[discord.Member, discord.User, int])
+            user: (Union[discord.Member, discord.User, discord.Object])
                 The member to ban.
             reason: (Optional[str])
                 The reason for the ban.
         """
-        user = puser
-        if type(user) is int:
-            try:
-                user = discord.Object(id=puser)
-            except Exception:
-                raise Exception(f'There is no user with the id {user}')
+        if isinstance(user, int):
+            user = discord.Object(id=user)
 
         if user in ctx.guild.members:
             embed = self.client.templates.base_embed()
@@ -108,12 +104,18 @@ class GuildManagement(commands.Cog):
             embed.set_footer(icon_url=user.avatar_url, text='Sorry, man. - Crypex Bot')
             await user.send(embed=embed)
 
-        await ctx.guild.ban(user, reason=reason)
-        # So the embed does not show 'user' as a class representation.
-        if not isinstance(user, (discord.Member, discord.User)):
-            user = puser
-        await ctx.send(embed=self.client.templates.base_embed(f'Goodbye, {user}!'))
+        try:
+            await ctx.guild.ban(user, reason=reason)
+            if isinstance(user, discord.Object):
+                user = user.id
+
+            await self.client.send(ctx.channel, text=f'Goodbye, {user}!')
+        except Exception:
+            if isinstance(user, discord.Object):
+                user = user.id
+
+            raise Exception(f'I can\'t find anyone on Discord by the ID of {user}.')
 
 
-def setup(client: commands.Bot) -> None:
+def setup(client):
     client.add_cog(GuildManagement(client))
