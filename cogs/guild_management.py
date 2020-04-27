@@ -1,5 +1,5 @@
 from discord.ext import commands
-from typing import Optional, Union
+from typing import Optional, Union, Dict
 from discord.ext.commands import command, guild_only, bot_has_permissions, has_permissions, Context
 from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, Object
 
@@ -35,7 +35,7 @@ class GuildManagement(commands.Cog):
             category_name = None
             pass
 
-        channel_options = {'vc', 'voice', 'voicechannel', 'voice_channel'}
+        channel_options: Dict[str] = {'vc', 'voice', 'voicechannel', 'voice_channel'}
         if channel_type.content not in channel_options:
             await self.client.send(ctx.channel, text='Enter a channel topic.')
             topic: Message = await self.client.wait_for('message', check=check)
