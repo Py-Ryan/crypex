@@ -1,8 +1,8 @@
 from discord.ext import commands
 from typing import Union, Optional
-from discord.ext.commands import Context
 from discord import Member, TextChannel, User, VoiceChannel
 
+Context: commands.Context = commands.Context
 
 class GuildManagement(commands.Cog):
     client: commands.Bot = ...

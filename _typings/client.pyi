@@ -1,10 +1,11 @@
 from logging import Logger
 from discord.ext import commands
-from discord.ext.commands import Context
 from discord import Message, TextChannel
 from typing import Any, Dict, List, Union
 from crypex.localdata.localdata import LocalData
 from crypex.cogs.utils.template_objects import TemplateObjects
+
+Context: commands.Context = commands.Context
 
 cogs: List[str]
 

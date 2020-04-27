@@ -1,6 +1,6 @@
 from discord.ext import commands
-from discord.ext.commands import Context
 
+Context: commands.Context = commands.Context
 
 class Sovereign(commands.Cog):
     client: commands.Bot = ...
