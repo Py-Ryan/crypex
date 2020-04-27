@@ -2,7 +2,7 @@ from typing import Optional, Union, Set, List
 from discord.ext.commands import command, guild_only, bot_has_permissions, has_permissions, Cog, \
     CategoryChannelConverter, BadArgument
 from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, Object, HTTPException, \
-                    Role, PermissionOverwrite, Permissions
+    Role, PermissionOverwrite
 
 
 class GuildManagement(Cog):
@@ -20,14 +20,14 @@ class GuildManagement(Cog):
         def check(message: Message) -> bool:
             return message.author == ctx.author
 
-        await self.client.send(ctx.channel, text='What should the channel\'s name be?')
+        await ctx.embed(text='What should the channel\'s name be?')
         channel_name: Message = await self.client.wait_for('message', check=check)
 
-        await self.client.send(ctx.channel, text='Should the channel be a VC or Text? Pick one.')
+        await ctx.embed(text='Should the channel be a VC or Text? Pick one.')
         channel_type: Message = await self.client.wait_for('message', check=check)
 
-        await self.client.send(ctx.channel, text='If you\'d like the channel to be added to a category.'
-                                                 'Enter that categories exact name. If not, say no.')
+        await ctx.embed(text='If you\'d like the channel to be added to a category.'
+                             'Enter that categories exact name. If not, say no.')
         category_name: Optional[Message] = await self.client.wait_for('message', check=check)
 
         try:
@@ -39,7 +39,7 @@ class GuildManagement(Cog):
 
         channel_options: Set[str] = {'vc', 'voice', 'voicechannel', 'voice_channel'}
         if channel_type.content not in channel_options:
-            await self.client.send(ctx.channel, text='Enter a channel topic.')
+            await ctx.embed(text='Enter a channel topic.')
             topic: Message = await self.client.wait_for('message', check=check)
 
         if channel_name and channel_type.content.lower() in channel_options:
@@ -51,7 +51,7 @@ class GuildManagement(Cog):
                                                 category=category_name,
                                                 topic=topic.content)
 
-        await self.client.send(ctx.channel, text='Alright, done.')
+        await ctx.embed(text='Alright, done.')
 
     @command()
     @guild_only()
@@ -60,7 +60,7 @@ class GuildManagement(Cog):
     async def delete_channel(self, ctx, channel: Union[TextChannel, VoiceChannel], *, reason='None Provided.'):
         try:
             await channel.delete(reason=reason)
-            await self.client.send(ctx.channel, text=f'Goodbye, {channel.name}!')
+            await ctx.embed(text=f'Goodbye, {channel.name}!')
         except Exception:
             raise Exception(f'There is no channel named {str(channel)}')
 
@@ -71,7 +71,7 @@ class GuildManagement(Cog):
     async def ban(self, ctx, user: Union[Member, User, int], *, reason='None Provided'):
         if isinstance(user, Member):
             if ctx.author.top_role <= user.top_role:
-                await self.client.send('You can\'t ban a user that\'s higher than you.')
+                await ctx.embed(text='You can\'t ban a user that\'s higher than you.')
 
         if isinstance(user, int):
             user: Object = Object(id=user)
@@ -89,7 +89,7 @@ class GuildManagement(Cog):
             await ctx.guild.ban(user, reason=reason)
             if isinstance(user, Object):
                 user: str = user.id
-            await self.client.send(ctx.channel, text=f'Goodbye, {user}!')
+            await ctx.embed(text=f'Goodbye, {user}!')
         except Exception:
             if isinstance(user, Object):
                 user: str = user.id
@@ -105,7 +105,7 @@ class GuildManagement(Cog):
 
         try:
             await ctx.guild.unban(user, reason=reason)
-            await self.client.send(ctx.channel, text=f'Successfully unbanned {user.id}.')
+            await ctx.embed(text=f'Successfully unbanned {user.id}.')
         except HTTPException:
             raise Exception(f'Either there is no user under that ID that is banned, or, '
                             f'I could not find any users on discord with the ID of {user.id}.')
@@ -116,7 +116,7 @@ class GuildManagement(Cog):
     @has_permissions(kick_members=True)
     async def kick(self, ctx, user: Member, *, reason='None provided.'):
         if ctx.author.top_role <= user.top_role:
-            await self.client.send(ctx.channel, text='You can\'t kick a user that\'s higher than you.')
+            await ctx.embed(text='You can\'t kick a user that\'s higher than you.')
         else:
             embed: Embed = self.client.templates.base_embed()
             embed.title = f'You have been kicked from {ctx.guild.name}'
@@ -126,7 +126,7 @@ class GuildManagement(Cog):
             embed.set_footer(icon_url=self.client.user.avatar_url, text='Sorry, mate. - Crypex Bot.')
             await user.send(embed=embed)
             await user.kick(reason=reason)
-            await self.client.send(ctx.channel, text=f'Goodbye, {user.display_name}!')
+            await ctx.embed(text=f'Goodbye, {user.display_name}!')
 
     @command()
     @guild_only()
@@ -134,7 +134,7 @@ class GuildManagement(Cog):
     @has_permissions(manage_members=True)
     async def mute(self, ctx, user: Member, *, reason='None provided.'):
         if ctx.author.top_role <= user.top_role:
-            await self.client.send(ctx.channel, text='You can\'t mute a user that\'s higher than you.')
+            await ctx.embed(text='You can\'t mute a user that\'s higher than you.')
         else:
             for channel in ctx.guild.channels:
                 if not isinstance(channel, VoiceChannel):
@@ -148,7 +148,7 @@ class GuildManagement(Cog):
             embed.add_field(name='Reason:', value=reason, inline=True)
             embed.set_thumbnail(url=ctx.guild.icon_url)
             await user.send(embed=embed)
-            await self.client.send(ctx.channel, text=f'{user} will be shutten up until you decide otherwise.')
+            await ctx.embed(text=f'{user} will be shutten up until you decide otherwise.')
 
     @command()
     @guild_only()
@@ -156,7 +156,7 @@ class GuildManagement(Cog):
     @has_permissions(manage_members=True)
     async def unmute(self, ctx, user: Member, *, reason='Time\'s up.'):
         if ctx.author.top_role <= user.top_role:
-            await self.client.send(ctx.channel, text='You can\'t unmute a user that\'s higher than you.')
+            await ctx.embed(text='You can\'t unmute a user that\'s higher than you.')
         else:
             for channel in ctx.guild.channels:
                 if isinstance(channel, (TextChannel, CategoryChannel)):
@@ -170,7 +170,7 @@ class GuildManagement(Cog):
             embed.add_field(name='Reason:', value=reason, inline=True)
             embed.set_thumbnail(url=ctx.guild.icon_url)
             await user.send(embed=embed)
-            await self.client.send(ctx.channel, text=f'{user} can now speak again.')
+            await ctx.embed(text=f'{user} can now speak again.')
 
     @command()
     @guild_only()
@@ -181,11 +181,12 @@ class GuildManagement(Cog):
             if member:
                 def check(m) -> bool:
                     return m.author == member
+
                 await ctx.channel.purge(limit=amount, check=check)
             else:
                 await ctx.channel.purge(limit=amount)
         else:
-            self.client.send(ctx.channel, text='The amount must be 1 or above, y\'know.')
+            await ctx.embed(text='The amount must be 1 or above, y\'know.')
 
     @command()
     @guild_only()
@@ -194,7 +195,7 @@ class GuildManagement(Cog):
     async def clear_channel(self, ctx):
         await ctx.channel.clone()
         await ctx.channel.delete()
-        await self.client.send(text='Successfully cleared the channel.')
+        await ctx.embed(text='Successfully cleared the channel.')
 
     @command()
     @guild_only()
@@ -208,7 +209,7 @@ class GuildManagement(Cog):
                 self.untouchable_snowflakes.append(snowflake)
 
         await ctx.channel.set_permissions(ctx.guild.default_role, send_messages=False)
-        await self.client.send(ctx.channel, text=f'Silenced {ctx.channel.name}. (:')
+        await ctx.embed(text=f'Silenced {ctx.channel.name}. (:')
 
     @command()
     @guild_only()
@@ -219,7 +220,7 @@ class GuildManagement(Cog):
             if snowflake not in self.untouchable_snowflakes:
                 await ctx.channel.set_permissions(snowflake, send_messages=True)
 
-        await self.client.send(ctx.channel, text=f'Unsilenced {ctx.channel.name}. ):')
+        await ctx.embed(text=f'Unsilenced {ctx.channel.name}. ):')
 
 
 def setup(client):

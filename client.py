@@ -3,8 +3,9 @@ from typing import List
 from traceback import extract_tb
 from discord.ext import commands
 from .localdata.localdata import LocalData
+from crypex.cogs.utils.context import Context
 from crypex.cogs.utils.template_objects import TemplateObjects
-from discord.ext.commands import NoEntryPointError, ExtensionFailed, Context
+from discord.ext.commands import NoEntryPointError, ExtensionFailed
 
 cogs = list()
 
@@ -61,10 +62,10 @@ class Crypex(commands.Bot):
         if not prefix:
             self.data.add({str(message.guild.id): self.default_prefix}, 'guilds')
             prefix: List[str] = self.data.get(str(message.guild.id))
-
         try:
             if message.content.startswith(prefix[0]) and not message.author.bot:
-                await self.process_commands(message)
+                ctx = await self.get_context(message, cls=Context)
+                await self.invoke(ctx)
         except KeyError:
             raise KeyError('Missing prefix.')
 
