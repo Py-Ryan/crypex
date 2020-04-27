@@ -97,7 +97,7 @@ class GuildManagement(Cog):
     @guild_only()
     @bot_has_permissions(ban_members=True)
     @has_permissions(ban_members=True)
-    async def unban(self, ctx, user: Union[User, int], *, reason='None provided.'):
+    async def unban(self, ctx, user: Union[Member, User, int], *, reason='None provided.'):
         if isinstance(user, int):
             user = Object(id=user)
 

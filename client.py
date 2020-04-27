@@ -1,5 +1,6 @@
 from os import listdir
 from typing import List
+from traceback import extract_tb
 from discord.ext import commands
 from .localdata.localdata import LocalData
 from crypex.cogs.utils.template_objects import TemplateObjects
@@ -11,9 +12,8 @@ cogs = list()
 def automatically_append_cogs():
     for file in listdir('crypex/cogs'):
         if file.endswith('.py'):
-            file_name: List[str] = file.split('.')
             try:
-                cogs.append(f'crypex.cogs.{file_name[0]}')
+                cogs.append(f'crypex.cogs.{file[:-3]}')
             except KeyError:
                 raise KeyError('Could not automatically append a cog. Parsed file_name is an invalid list.')
 
@@ -69,9 +69,10 @@ class Crypex(commands.Bot):
             raise KeyError('Missing prefix.')
 
     async def on_command_error(self, context, exception):
-        exception = str(getattr(exception, 'original', exception))
-        await self.send(context.channel, text=exception)
-        self.logger.error(exception)
+        exception = getattr(exception, 'original', exception)
+
+        await self.send(context.channel, text=str(exception))
+        self.logger.error(str(extract_tb(exception.__traceback__)))
 
     async def send(self, channel, **kwargs):
         await channel.send(embed=self.templates.base_embed(**kwargs))
