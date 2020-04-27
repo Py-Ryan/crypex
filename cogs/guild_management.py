@@ -1,10 +1,10 @@
-from discord.ext import commands
 from typing import Optional, Union, Set
-from discord.ext.commands import command, guild_only, bot_has_permissions, has_permissions
-from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, Object
+from discord.ext.commands import command, guild_only, bot_has_permissions, has_permissions, Cog, \
+    CategoryChannelConverter, BadArgument
+from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, Object, HTTPException
 
 
-class GuildManagement(commands.Cog):
+class GuildManagement(Cog):
     """Guild management commands."""
 
     def __init__(self, client):
@@ -30,8 +30,8 @@ class GuildManagement(commands.Cog):
 
         try:
             category_name: Optional[CategoryChannel] = \
-                await commands.CategoryChannelConverter().convert(ctx, category_name.content)
-        except commands.BadArgument:  # In case there is no category matching the argument.
+                await CategoryChannelConverter().convert(ctx, category_name.content)
+        except BadArgument:  # In case there is no category matching the argument.
             category_name = None
             pass
 
@@ -67,6 +67,10 @@ class GuildManagement(commands.Cog):
     @bot_has_permissions(ban_members=True)
     @has_permissions(ban_members=True)
     async def ban(self, ctx, user: Union[Member, User, int], *, reason='None Provided'):
+        if isinstance(user, Member):
+            if ctx.author.top_role <= user.top_role:
+                await self.client.send('You can\'t ban a user that\'s higher than you.')
+
         if isinstance(user, int):
             user: Object = Object(id=user)
 
@@ -83,13 +87,88 @@ class GuildManagement(commands.Cog):
             await ctx.guild.ban(user, reason=reason)
             if isinstance(user, Object):
                 user: str = user.id
-
             await self.client.send(ctx.channel, text=f'Goodbye, {user}!')
         except Exception:
             if isinstance(user, Object):
                 user: str = user.id
-
             raise Exception(f'I can\'t find anyone on Discord by the ID of {user}.')
+
+    @command()
+    @guild_only()
+    @bot_has_permissions(ban_members=True)
+    @has_permissions(ban_members=True)
+    async def unban(self, ctx, user: Union[User, int], *, reason='None provided.'):
+        if isinstance(user, int):
+            user = Object(id=user)
+
+        try:
+            await ctx.guild.unban(user, reason=reason)
+            await self.client.send(ctx.channel, text=f'Successfully unbanned {user.id}.')
+        except HTTPException:
+            raise Exception(f'Either there is no user under that ID that is banned, or, '
+                            f'I could not find any users on discord with the ID of {user.id}.')
+
+    @command()
+    @guild_only()
+    @bot_has_permissions(kick_members=True)
+    @has_permissions(kick_members=True)
+    async def kick(self, ctx, user: Member, *, reason='None provided.'):
+        if ctx.author.top_role <= user.top_role:
+            await self.client.send(ctx.channel, text='You can\'t kick a user that\'s higher than you.')
+        else:
+            embed: Embed = self.client.templates.base_embed()
+            embed.title = f'You have been kicked from {ctx.guild.name}'
+            embed.add_field(name='Kicked By:', value=f'{ctx.author}\n({ctx.author.id})', inline=True)
+            embed.add_field(name='Reason:', value=reason, inline=True)
+            embed.set_thumbnail(url=ctx.guild.icon_url)
+            embed.set_footer(icon_url=self.client.user.avatar_url, text='Sorry, mate. - Crypex Bot.')
+            await user.send(embed=embed)
+            await user.kick(reason=reason)
+            await self.client.send(ctx.channel, text=f'Goodbye, {user.display_name}!')
+
+    @command()
+    @guild_only()
+    @bot_has_permissions(manage_members=True)
+    @has_permissions(manage_members=True)
+    async def mute(self, ctx, user: Member, *, reason='None provided.'):
+        if ctx.author.top_role <= user.top_role:
+            await self.client.send(ctx.channel, text='You can\'t mute a user that\'s higher than you.')
+        else:
+            for channel in ctx.guild.channels:
+                if not isinstance(channel, VoiceChannel):
+                    await channel.set_permissions(user, send_messages=False)
+                else:
+                    await channel.set_permissions(user, speak=False)
+
+            embed: Embed = self.client.templates.base_embed()
+            embed.title = f'You\'ve been muted in {ctx.guild.name}.'
+            embed.add_field(name='Muted By:', value=f'{ctx.author}\n({ctx.author.id})', inline=True)
+            embed.add_field(name='Reason:', value=reason, inline=True)
+            embed.set_thumbnail(url=ctx.guild.icon_url)
+            await user.send(embed=embed)
+            await self.client.send(ctx.channel, text=f'{user} will be shutten up until you decide otherwise.')
+
+    @command()
+    @guild_only()
+    @bot_has_permissions(manage_members=True)
+    @has_permissions(manage_members=True)
+    async def unmute(self, ctx, user: Member, *, reason='Time\'s up.'):
+        if ctx.author.top_role <= user.top_role:
+            await self.client.send(ctx.channel, text='You can\'t unmute a user that\'s higher than you.')
+        else:
+            for channel in ctx.guild.channels:
+                if isinstance(channel, (TextChannel, CategoryChannel)):
+                    await channel.set_permissions(user, send_messages=True)
+                else:
+                    await channel.set_permissions(user, speak=True)
+
+            embed: Embed = self.client.templates.base_embed()
+            embed.title = f'You\'ve been unmuted in {ctx.guild.name}.'
+            embed.add_field(name='Unmuted By:', value=f'{ctx.author}\n({ctx.author.id})', inline=True)
+            embed.add_field(name='Reason:', value=reason, inline=True)
+            embed.set_thumbnail(url=ctx.guild.icon_url)
+            await user.send(embed=embed)
+            await self.client.send(ctx.channel, text=f'{user} can now speak again.')
 
 
 def setup(client):
