@@ -74,6 +74,3 @@ class Crypex(commands.Bot):
 
         await self.send(context.channel, text=str(exception))
         self.logger.error(str(extract_tb(exception.__traceback__)))
-
-    async def send(self, channel, **kwargs):
-        await channel.send(embed=self.templates.base_embed(**kwargs))
