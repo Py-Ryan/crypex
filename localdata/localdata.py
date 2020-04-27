@@ -1,94 +1,63 @@
 import json
-import logging
-from typing import Optional, List, Dict
+from logging import Logger, getLogger
+from typing import List, Dict, Any, Optional, Union
 
 
 class LocalData:
 
     def __init__(self, local_data='crypex/localdata/localdata.json'):
         self.local_data: str = local_data
-        self.logger: logging.Logger = logging.getLogger(__name__)
+        self.logger: Logger = getLogger(__name__)
         self.logger.info('Loaded LocalData object.')
 
-    def get(self, key):
-        """Deep search local data for a key's value.
+    def get(self, key: Union[str, Any]) -> List[Any]:
+        res: List[Any] = []
 
-            Parameters
-            ----------
-                key: (str)
-                    The key to search for.
-
-            Return Type
-            -----------
-                List[str]
-        """
-        res: List[str] = []
-
-        def _get_results(_d: dict) -> List[str]:
+        def get_results(dictionary: Dict[Any]) -> None:
             try:
-                res.append(str(_d[key]))
+                res.append(str(dictionary[key]))
             except KeyError:
                 pass
 
         with open(self.local_data, mode='r+') as file:
-            json.load(file, object_hook=_get_results)
+            json.load(file, object_hook=get_results)
 
         return res
 
-    def add(self, _d, add_to=None):
-        """Add a new JSON object to local data.
-
-            Parameters
-            ----------
-                add_to: (Optional[str])
-                    The name of the key to add _d too. Must be a first-level key.
-                _d: (dict)
-                    Python dictionary containing unsterilized JSON objects.
-        """
+    def add(self, dictionary: Dict[Any], add_to: Optional[str] = None):
         with open(self.local_data, mode='r+') as file:
-            data: Dict[str] = json.load(file)
+            data: Dict[str, Any] = json.load(file)
             try:
                 if add_to:
-                    data[add_to].update(_d)
+                    data[add_to].update(dictionary)
                 else:
-                    data.update(_d)
+                    data.update(dictionary)
                 file.seek(0)
                 json.dump(data, file, indent=4, sort_keys=True, ensure_ascii=True)
             except KeyError:  # If add_to does not exist, create it.
-                data[add_to] = {}
-                data[add_to].update(_d)
+                data[add_to]: Dict[str, Any] = {}
+                data[add_to].update(dictionary)
                 file.seek(0)
                 json.dump(data, file, indent=4, sort_keys=True, ensure_ascii=True)
-            except Exception as other_excep:
-                raise Exception(other_excep)
+            except Exception as msg:
+                raise Exception(msg)
 
-    def edit(self, key, new_value, delete=False):
-        """Edit a key from the local data.
-
-            Parameters
-            ----------
-                key: (str)
-                    The key to edit, or delete.
-                new_value: (str)
-                    The new value of the key.
-                delete: (bool)
-                    Whether to delete or edit the key.
-        """
+    def edit(self, key: Union[str, Any], new_value: Union[str, Any], delete: bool = False):
         key_exists: List[str] = self.get(key)
         if key_exists:
             with open(self.local_data, mode='r+') as file:
-                data: Dict[str] = json.load(file)
+                data: Dict[str, Any] = json.load(file)
 
-                def nested_recursion(_d: dict) -> None:
-                    for k, v in _d.items():
+                def nested_recursion(dictionary: dict) -> None:
+                    for k, v in dictionary.items():
                         if isinstance(v, dict):
                             nested_recursion(v)
                         else:
                             if k == key:
                                 if delete:
-                                    del _d[key]
+                                    del dictionary[key]
                                 else:
-                                    _d[key] = new_value
+                                    dictionary[key] = new_value
 
                 nested_recursion(data)
                 data.update(data)
