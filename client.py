@@ -72,5 +72,5 @@ class Crypex(commands.Bot):
     async def on_command_error(self, context, exception):
         exception = getattr(exception, 'original', exception)
 
-        await self.send(context.channel, text=str(exception))
+        await context.embed(text=str(exception))
         self.logger.error(str(extract_tb(exception.__traceback__)))
