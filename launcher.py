@@ -1,18 +1,19 @@
-import contextlib
-import logging
 from crypex import client
+from discord.ext.commands import Bot
+from contextlib import contextmanager
+from logging import getLogger, Logger, FileHandler, Formatter, INFO
 
 
-@contextlib.contextmanager
-def setup_logging():
+@contextmanager
+def setup_logging() -> None:
     try:
-        logging.getLogger().setLevel(logging.INFO)
+        getLogger().setLevel(INFO)
 
-        log = logging.getLogger()
-        log.setLevel(logging.INFO)
-        handler = logging.FileHandler(filename='.client.log', encoding='utf-8', mode='w')
-        dt_fmt = '%Y-%m-%d %H:%M:%S'
-        fmt = logging.Formatter('[{asctime}] [{levelname:<7}] {name}: {message}', dt_fmt, style='{')
+        log: Logger = getLogger()
+        log.setLevel(INFO)
+        handler: FileHandler = FileHandler(filename='.client.log', encoding='utf-8', mode='w')
+        dt_fmt: str = '%Y-%m-%d %H:%M:%S'
+        fmt: Formatter = Formatter('[{asctime}] [{levelname:<7}] {name}: {message}', dt_fmt, style='{')
         handler.setFormatter(fmt)
         log.addHandler(handler)
 
@@ -23,9 +24,9 @@ def setup_logging():
             log.removeHandler(handle)
 
 
-def initalize_client():
-    log = logging.getLogger()
-    bot = client.Crypex()
+def initalize_client() -> None:
+    log: Logger = getLogger()
+    bot: Bot = client.Crypex(log)
 
     bot.run()
 
