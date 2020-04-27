@@ -1,23 +1,23 @@
 from discord import Message
 from discord.ext import commands
-from discord.ext.commands import command, is_owner, Context
+from discord.ext.commands import command, is_owner
 
 
 class Sovereign(commands.Cog):
     """Bot owner-only commands."""
 
-    def __init__(self, client: commands.Bot) -> None:
-        self.client: commands.Bot = client
+    def __init__(self, client):
+        self.client = client
 
     @command()
     @is_owner()
-    async def reload(self, ctx: Context, *, extension_name: str) -> None:
+    async def reload(self, ctx, *, extension_name):
         self.client.reload_extension(f'crypex.cogs.{extension_name}')
         await self.client.send(ctx.channel, text=f'Successfully reloaded {extension_name}.')
 
     @command()
     @is_owner()
-    async def shutdown(self, ctx: Context) -> None:
+    async def shutdown(self, ctx):
         await self.client.send(ctx.channel, text='Are you sure?')
 
         def check(message: Message) -> bool:
@@ -31,5 +31,5 @@ class Sovereign(commands.Cog):
             await self.client.send(ctx.channel, text='Alright.')
 
 
-def setup(client: commands.Bot) -> None:
+def setup(client):
     client.add_cog(Sovereign(client))

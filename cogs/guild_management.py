@@ -1,20 +1,20 @@
 from discord.ext import commands
-from typing import Optional, Union, Dict
-from discord.ext.commands import command, guild_only, bot_has_permissions, has_permissions, Context
+from typing import Optional, Union, Set
+from discord.ext.commands import command, guild_only, bot_has_permissions, has_permissions
 from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, Object
 
 
 class GuildManagement(commands.Cog):
     """Guild management commands."""
 
-    def __init__(self, client: commands.Bot):
-        self.client: commands.Bot = client
+    def __init__(self, client):
+        self.client = client
 
     @command()
     @guild_only()
     @bot_has_permissions(manage_channels=True)
     @has_permissions(manage_channels=True)
-    async def create_channel(self, ctx: Context) -> None:
+    async def create_channel(self, ctx):
         def check(message: Message) -> bool:
             return message.author == ctx.author
 
@@ -35,7 +35,7 @@ class GuildManagement(commands.Cog):
             category_name = None
             pass
 
-        channel_options: Dict[str] = {'vc', 'voice', 'voicechannel', 'voice_channel'}
+        channel_options: Set[str] = {'vc', 'voice', 'voicechannel', 'voice_channel'}
         if channel_type.content not in channel_options:
             await self.client.send(ctx.channel, text='Enter a channel topic.')
             topic: Message = await self.client.wait_for('message', check=check)
@@ -55,7 +55,7 @@ class GuildManagement(commands.Cog):
     @guild_only()
     @bot_has_permissions(manage_channels=True)
     @has_permissions(manage_channels=True)
-    async def delete_channel(self, ctx: Context, channel: Union[TextChannel, VoiceChannel], *, reason='None Provided.'):
+    async def delete_channel(self, ctx, channel: Union[TextChannel, VoiceChannel], *, reason='None Provided.'):
         try:
             await channel.delete(reason=reason)
             await self.client.send(ctx.channel, text=f'Goodbye, {channel.name}!')
@@ -66,7 +66,7 @@ class GuildManagement(commands.Cog):
     @guild_only()
     @bot_has_permissions(ban_members=True)
     @has_permissions(ban_members=True)
-    async def ban(self, ctx: Context, user: Union[Member, User, int], *, reason: str = 'None Provided'):
+    async def ban(self, ctx, user: Union[Member, User, int], *, reason='None Provided'):
         if isinstance(user, int):
             user: Object = Object(id=user)
 

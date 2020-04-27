@@ -5,7 +5,7 @@ from logging import getLogger, Logger, FileHandler, Formatter, INFO
 
 
 @contextmanager
-def setup_logging() -> None:
+def setup_logging():
     try:
         getLogger().setLevel(INFO)
 
@@ -24,7 +24,7 @@ def setup_logging() -> None:
             log.removeHandler(handle)
 
 
-def initalize_client() -> None:
+def initalize_client():
     log: Logger = getLogger()
     bot: Bot = client.Crypex(log)
 

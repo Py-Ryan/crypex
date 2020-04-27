@@ -1,16 +1,14 @@
 from os import listdir
-from logging import Logger
+from typing import List
 from discord.ext import commands
-from discord import Message, TextChannel
-from typing import List, Dict, Any, Union
 from .localdata.localdata import LocalData
 from crypex.cogs.utils.template_objects import TemplateObjects
 from discord.ext.commands import NoEntryPointError, ExtensionFailed, Context
 
-cogs: List[str] = list()
+cogs = list()
 
 
-def automatically_append_cogs() -> None:
+def automatically_append_cogs():
     for file in listdir('crypex/cogs'):
         if file.endswith('.py'):
             file_name: List[str] = file.split('.')
@@ -23,15 +21,15 @@ def automatically_append_cogs() -> None:
 class Crypex(commands.Bot):
     """Represents an instance of Crypex."""
 
-    def __init__(self, logger: Logger) -> None:
-        self.data: LocalData = LocalData()
-        self.templates: TemplateObjects = TemplateObjects()
-        self.logger: Logger = logger
+    def __init__(self, logger):
+        self.data = LocalData()
+        self.templates = TemplateObjects()
+        self.logger = logger
 
         try:
-            self.default_prefix: str = self.data.get('default_prefix')[0]
+            self.default_prefix = self.data.get('default_prefix')[0]
         except KeyError:
-            self.default_prefix: str = ';'
+            self.default_prefix = ';'
             raise KeyError('Missing default_prefix.')
 
         super().__init__(command_prefix=self.default_prefix)
@@ -46,7 +44,7 @@ class Crypex(commands.Bot):
             except ExtensionFailed as msg:
                 raise ExtensionFailed(msg, msg.original)
 
-    def run(self) -> None:
+    def run(self):
         """Run the bot."""
 
         token: List[str] = self.data.get('token')
@@ -55,10 +53,10 @@ class Crypex(commands.Bot):
         except KeyError:
             raise KeyError('Missing client token.')
 
-    async def on_ready(self) -> None:
+    async def on_ready(self):
         print(f'Started on {self.user} with ID {self.user.id}.')
 
-    async def on_message(self, message: Message) -> None:
+    async def on_message(self, message):
         prefix: List[str] = self.data.get(str(message.guild.id))
         if not prefix:
             self.data.add({str(message.guild.id): self.default_prefix}, 'guilds')
@@ -70,10 +68,10 @@ class Crypex(commands.Bot):
         except KeyError:
             raise KeyError('Missing prefix.')
 
-    async def on_command_error(self, context: Context, exception) -> None:
+    async def on_command_error(self, context, exception):
         exception = str(getattr(exception, 'original', exception))
         await self.send(context.channel, text=exception)
         self.logger.error(exception)
 
-    async def send(self, channel: TextChannel, **kwargs: Union[Dict[str, Any], str]) -> None:
+    async def send(self, channel, **kwargs):
         await channel.send(embed=self.templates.base_embed(**kwargs))

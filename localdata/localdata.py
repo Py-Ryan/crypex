@@ -1,17 +1,17 @@
 import json
-from logging import Logger, getLogger
-from typing import List, Dict, Any, Optional, Union
+from logging import getLogger
+from typing import List, Dict, Any
 
 
 class LocalData:
 
     def __init__(self, local_data='crypex/localdata/localdata.json'):
-        self.local_data: str = local_data
-        self.logger: Logger = getLogger(__name__)
+        self.local_data = local_data
+        self.logger = getLogger(__name__)
         self.logger.info('Loaded LocalData object.')
 
-    def get(self, key: Union[str, Any]) -> List[Any]:
-        res: List[Any] = []
+    def get(self, key):
+        res: List[Any] = list()
 
         def get_results(dictionary: Dict[Any]) -> None:
             try:
@@ -24,7 +24,7 @@ class LocalData:
 
         return res
 
-    def add(self, dictionary: Dict[Any], add_to: Optional[str] = None):
+    def add(self, dictionary, add_to=None):
         with open(self.local_data, mode='r+') as file:
             data: Dict[str, Any] = json.load(file)
             try:
@@ -42,7 +42,7 @@ class LocalData:
             except Exception as msg:
                 raise Exception(msg)
 
-    def edit(self, key: Union[str, Any], new_value: Union[str, Any], delete: bool = False):
+    def edit(self, key, new_value, delete=False):
         key_exists: List[str] = self.get(key)
         if key_exists:
             with open(self.local_data, mode='r+') as file:

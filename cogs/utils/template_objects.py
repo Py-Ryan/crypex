@@ -8,7 +8,7 @@ class TemplateObjects:
     """Class containing template objects for quick use by the client."""
 
     def __init__(self):
-        self.colors: List[Color, Colour] = list()
+        self.colors = list()
         for name in dir(Color):
             try:
                 attr: Any = getattr(Color, str(name))
@@ -19,13 +19,13 @@ class TemplateObjects:
             except TypeError:   # Ignore argument errors, none of the methods we want have arguments other than self.
                 pass
 
-    def get_color(self, color_name: str = 'blurple', random: bool = True) -> Optional[Colour]:
+    def get_color(self, color_name='blurple', random=True):
         if random:
             return choice(self.colors)
         else:
             return getattr(self.colors, color_name, None)
 
-    def base_embed(self, text) -> Embed:
+    def base_embed(self, text):
         color: Colour = self.get_color()
 
         return Embed(description=text, colour=color)
