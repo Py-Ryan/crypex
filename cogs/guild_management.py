@@ -1,7 +1,8 @@
-from typing import Optional, Union, Set
+from typing import Optional, Union, Set, List
 from discord.ext.commands import command, guild_only, bot_has_permissions, has_permissions, Cog, \
     CategoryChannelConverter, BadArgument
-from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, Object, HTTPException
+from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, Object, HTTPException, \
+                    Role, PermissionOverwrite, Permissions
 
 
 class GuildManagement(Cog):
@@ -9,6 +10,7 @@ class GuildManagement(Cog):
 
     def __init__(self, client):
         self.client = client
+        self.untouchable_snowflakes: List[Union[Role, Member], PermissionOverwrite] = list()
 
     @command()
     @guild_only()
@@ -169,6 +171,55 @@ class GuildManagement(Cog):
             embed.set_thumbnail(url=ctx.guild.icon_url)
             await user.send(embed=embed)
             await self.client.send(ctx.channel, text=f'{user} can now speak again.')
+
+    @command()
+    @guild_only()
+    @bot_has_permissions(manage_messages=True)
+    @has_permissions(manage_messages=True)
+    async def purge(self, ctx, amount: int, member: Optional[Member] = None):
+        if amount:
+            if member:
+                def check(m) -> bool:
+                    return m.author == member
+                await ctx.channel.purge(limit=amount, check=check)
+            else:
+                await ctx.channel.purge(limit=amount)
+        else:
+            self.client.send(ctx.channel, text='The amount must be 1 or above, y\'know.')
+
+    @command()
+    @guild_only()
+    @bot_has_permissions(manage_channels=True)
+    @has_permissions(manage_channels=True)
+    async def clear_channel(self, ctx):
+        await ctx.channel.clone()
+        await ctx.channel.delete()
+        await self.client.send(text='Successfully cleared the channel.')
+
+    @command()
+    @guild_only()
+    @bot_has_permissions(administrator=True)
+    @has_permissions(administrator=True)
+    async def silence(self, ctx):
+        for snowflake in ctx.channel.overwrites:
+            if ctx.channel.overwrites_for(snowflake).send_messages:  # Avoid touching mute roles.
+                await ctx.channel.set_permissions(snowflake, send_messages=False)
+            else:
+                self.untouchable_snowflakes.append(snowflake)
+
+        await ctx.channel.set_permissions(ctx.guild.default_role, send_messages=False)
+        await self.client.send(ctx.channel, text=f'Silenced {ctx.channel.name}. (:')
+
+    @command()
+    @guild_only()
+    @bot_has_permissions(administrator=True)
+    @has_permissions(administrator=True)
+    async def unsilence(self, ctx):
+        for snowflake in ctx.channel.overwrites:
+            if snowflake not in self.untouchable_snowflakes:
+                await ctx.channel.set_permissions(snowflake, send_messages=True)
+
+        await self.client.send(ctx.channel, text=f'Unsilenced {ctx.channel.name}. ):')
 
 
 def setup(client):
