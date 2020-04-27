@@ -70,7 +70,7 @@ class GuildManagement(commands.Cog):
         if isinstance(user, int):
             user: Object = Object(id=user)
 
-        if user in ctx.guild.members:
+        if isinstance(user, Member):
             embed: Embed = self.client.templates.base_embed()
             embed.title = f'You have been banned from {ctx.guild.name}.'
             embed.set_thumbnail(url=ctx.guild.icon_url)
