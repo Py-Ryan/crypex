@@ -1,5 +1,5 @@
-from discord import Colour, Color, Embed
 from typing import Optional, List
+from discord import Colour, Color, Embed
 
 
 class TemplateObjects:
