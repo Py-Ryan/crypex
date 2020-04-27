@@ -13,7 +13,7 @@ class LocalData:
     def get(self, key):
         res: List[Any] = list()
 
-        def get_results(dictionary: Dict[Any]) -> None:
+        def get_results(dictionary: Dict[str, Any]) -> None:
             try:
                 res.append(str(dictionary[key]))
             except KeyError:
