@@ -1,8 +1,8 @@
-from typing import Optional, Union, Set, List
+from typing import Optional, Union, Set, List, Callable
 from discord.ext.commands import command, guild_only, bot_has_permissions, has_permissions, Cog, \
     CategoryChannelConverter, BadArgument
-from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, Object, HTTPException, \
-    Role, PermissionOverwrite
+from discord import Message, VoiceChannel, TextChannel, CategoryChannel, Member, User, Embed, HTTPException, \
+    Role, PermissionOverwrite, Object as Snowflake
 
 
 class GuildManagement(Cog):
@@ -10,16 +10,14 @@ class GuildManagement(Cog):
 
     def __init__(self, client):
         self.client = client
-        self.untouchable_snowflakes: List[Union[Role, Member], PermissionOverwrite] = list()
+        self.untouchable_snowflakes: List[Union[Role, Member], PermissionOverwrite] = []
 
     @command()
     @guild_only()
     @bot_has_permissions(manage_channels=True)
     @has_permissions(manage_channels=True)
     async def create_channel(self, ctx):
-        def check(message: Message) -> bool:
-            return message.author == ctx.author
-
+        check: Callable[[Message], bool] = lambda message_: message_.author == ctx.author
         await ctx.embed(text='What should the channel\'s name be?')
         channel_name: Message = await self.client.wait_for('message', check=check)
 
@@ -35,7 +33,6 @@ class GuildManagement(Cog):
                 await CategoryChannelConverter().convert(ctx, category_name.content)
         except BadArgument:  # In case there is no category matching the argument.
             category_name = None
-            pass
 
         channel_options: Set[str] = {'vc', 'voice', 'voicechannel', 'voice_channel'}
         if channel_type.content not in channel_options:
@@ -74,7 +71,7 @@ class GuildManagement(Cog):
                 await ctx.embed(text='You can\'t ban a user that\'s higher than you.')
 
         if isinstance(user, int):
-            user: Object = Object(id=user)
+            user: Snowflake = Snowflake(id=user)
 
         if isinstance(user, Member):
             embed: Embed = self.client.templates.base_embed()
@@ -87,11 +84,13 @@ class GuildManagement(Cog):
 
         try:
             await ctx.guild.ban(user, reason=reason)
-            if isinstance(user, Object):
+            if isinstance(user, Snowflake):
                 user: str = user.id
+                # I am aware user.id should return an integer. `user` is annotated as a string
+                # because it will be implicitly converted into one in the next line.
             await ctx.embed(text=f'Goodbye, {user}!')
         except Exception:
-            if isinstance(user, Object):
+            if isinstance(user, Snowflake):
                 user: str = user.id
             raise Exception(f'I can\'t find anyone on Discord by the ID of {user}.')
 
@@ -101,7 +100,7 @@ class GuildManagement(Cog):
     @has_permissions(ban_members=True)
     async def unban(self, ctx, user: Union[Member, User, int], *, reason='None provided.'):
         if isinstance(user, int):
-            user: Object = Object(id=user)
+            user: Snowflake = Snowflake(id=user)
 
         try:
             await ctx.guild.unban(user, reason=reason)
@@ -179,10 +178,7 @@ class GuildManagement(Cog):
     async def purge(self, ctx, amount: int, member: Optional[Member] = None):
         if amount:
             if member:
-                def check(m) -> bool:
-                    return m.author == member
-
-                await ctx.channel.purge(limit=amount, check=check)
+                await ctx.channel.purge(limit=amount, check=lambda message_: message_.author == member)
             else:
                 await ctx.channel.purge(limit=amount)
         else:

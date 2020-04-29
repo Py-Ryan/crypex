@@ -7,7 +7,7 @@ from crypex.cogs.utils.context import Context
 from crypex.cogs.utils.template_objects import TemplateObjects
 from discord.ext.commands import NoEntryPointError, ExtensionFailed
 
-cogs = list()
+cogs = []
 
 
 def automatically_append_cogs():

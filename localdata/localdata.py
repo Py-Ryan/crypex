@@ -43,8 +43,7 @@ class LocalData:
                 raise Exception(msg)
 
     def edit(self, key, new_value, delete=False):
-        key_exists: List[str] = self.get(key)
-        if key_exists:
+        if self.get(key):
             with open(self.local_data, mode='r+') as file:
                 data: Dict[str, Any] = json.load(file)
 
