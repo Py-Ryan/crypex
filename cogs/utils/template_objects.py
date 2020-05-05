@@ -1,6 +1,6 @@
+from typing import Any
 from random import choice
 from inspect import ismethod
-from typing import Any
 from discord import Color, Colour, Embed
 
 

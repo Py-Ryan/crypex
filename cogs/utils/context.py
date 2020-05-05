@@ -1,21 +1,17 @@
 from discord.ext import commands
-from ...localdata.localdata import LocalData
+from typing import Union, Optional
 from .template_objects import TemplateObjects
+from discord import TextChannel, DMChannel, Member
 
 
 class Context(commands.Context):
     """Customized context object."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self.__templates__ = TemplateObjects()
-        self.__data__ = LocalData()
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
-    async def embed(self, **kwargs):
-        await self.channel.send(embed=self.__templates__.base_embed(**kwargs))
-
-    async def get(self, **kwargs):
-        return self.__data__.get(**kwargs)
-
-    async def edit(self, **kwargs):
-        return self.__data__.edit(**kwargs)
+    async def embed(self, channel: Optional[Union[TextChannel, DMChannel]] = None,
+                    user: Optional[Member] = None, **kwargs):
+        channel = channel or user or self.channel
+        await channel.send(embed=self.__templates__.base_embed(**kwargs))

@@ -11,7 +11,7 @@ class LocalData:
         self.logger.info('Loaded LocalData object.')
 
     def get(self, key):
-        res: List[Any] = list()
+        res: List[Any] = []
 
         def get_results(dictionary: Dict[str, Any]) -> None:
             try:
